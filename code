@@ -1,0 +1,35 @@
+from dronekit import connect,VehicleMode,LocationGlobalRelative
+import time
+import socket
+import argparse
+#function to connect script to drone
+def connectMyCopter():
+    parser=argparse.ArgumentParser(description='commands')
+    parser.add_argument('--connect')
+    args=parser.parse_args()
+    connections_string=args.connect()
+    vehicle=connect(connection_string,wait_ready=True)
+    return vehicle
+
+#function to arm the drone and take off
+def arm_and_takeoff(aTargetAltitude):
+    while not vehicle.is_armable:
+        print("waiting for drone to become armable")
+        time.sleep(1)
+    vehicle.mode=VehicleMode("GUIDED")
+    while vehicle.mode!='GUIDED':
+        print("waiting for drone to enter guided mode")
+        time.sleep(1)
+    #arm vehicle once guided mode is confirmed
+    vehicle.armed=True
+    while vehicle.armed==False:
+        print("waiting for drone to enter armed mode")
+        time.sleep(1)
+    vehicle.simple_takeoff(aTargetAltitude)
+    while True:
+        print("current Altitude:%d"vehicle.location.global_relative_frame.alt)
+        if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95:
+            break
+        time.sleep(1)
+    print("Target Altitude Reached")
+    
